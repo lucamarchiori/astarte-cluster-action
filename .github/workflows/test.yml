@@ -9,12 +9,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
       - name: Create Astarte cluster
+        id: create-astarte-cluster
         uses: ./
+        with:
+          astarte_version: "1.3-snapshot"
+          astarte_realm: "customrealm"
+          astarte_namespace: "astarte-test-namespace"
       - name: Test cluster functionality (register a device)
         run: |
           astartectl config current-context
           astartectl config contexts show $(astartectl config current-context)
           export DEVICE_ID=$(astartectl utils device-id generate-random)
           astartectl pairing agent register -- $DEVICE_ID
+      - name: Show output variables
+        run: |
+          echo "Realm Key:"
+          echo "${{ steps.create-astarte-cluster.outputs.realm_key }}"
+          echo "Housekeeping Key:"
+          echo "${{ steps.create-astarte-cluster.outputs.housekeeping_key }}"
+      - name: Interact with the cluster (via kubectl)
+        run: |
+          kubectl get pods -n astarte-test-namespace
+      - name: Save housekeeping key to file
+        run: |
+          printf '%s' "${{ steps.create-astarte-cluster.outputs.housekeeping_key }}" > housekeeping_key.pem
+      - name: Interact with the cluster (via astartectl)
+        run: |
+          astartectl housekeeping realms show "customrealm" --ignore-ssl-errors -u https://api.autotest.astarte-platform.org -k ./housekeeping_key.pem
