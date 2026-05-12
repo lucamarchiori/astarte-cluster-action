@@ -165,7 +165,8 @@ runs:
     - name: Create Astarte Realm
       if: ${{ inputs.astarte_realm != '' }}
       shell: bash
-      run: astartectl housekeeping realms create -y "${{ inputs.astarte_realm }}" --ignore-ssl-errors -u https://api.autotest.astarte-platform.org --realm-public-key "${{ github.action_path }}/${{ inputs.astarte_realm }}_public.pem" -k "${{ github.action_path }}/housekeeping_key.pem"
+      run: |
+        curl -X 'POST' -d '{"data":{"realm_name":"customrealm","jwt_public_key_pem":"-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE5zaIaP7X4auRev/hHFRc0Oul3Vbx\ntPPb4qFaFTiKM2IunA1p/oSg3+hfTiUqeobios+CISS1HP29kRQ7611mAQ==\n-----END PUBLIC KEY-----\n"}}' -H 'Accept: application/json' -H 'Authorization: ***' -H 'Content-Type: application/json' -H 'User-Agent: astarte-go' 'https://api.autotest.astarte-platform.org/housekeeping/v1/realms'
     - name: Wait for the realm creation to propagate
       if: ${{ inputs.astarte_realm != '' }}
       shell: bash
