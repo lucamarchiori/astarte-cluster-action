@@ -17,6 +17,7 @@ jobs:
           astarte_version: "1.3.0"
           astarte_realm: "customrealm"
           astarte_namespace: "astarte-test-namespace"
+          kustomize_astarte_patch: ""
       - name: Test cluster functionality (register a device)
         run: |
           astartectl config current-context
